@@ -1,20 +1,20 @@
 services:
   backend:
-    env_file: .env
-    build: ./backend
-    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
     volumes:
-      - ./url-shortener:/url-shortener
-    working_dir: /backend
+      - .:/app
+    working_dir: /app
     environment:
-      - PYTHONPATH=src
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_HOST=${POSTGRES_HOST}
-      - POSTGRES_PORT=${POSTGRES_PORT}
-      - POSTGRES_NAME=${POSTGRES_NAME}
-    # command: sh -c "alembic upgrade head && uvicorn run:make_app --factory --host ${APP_HOST} --port ${APP_PORT} --reload"
-    command: sh -c "uvicorn run:make_app --factory --host 0.0.0.0 --port 8000 --reload"
+      PYTHONPATH: /app/src
+      POSTGRES_USER: ${POSTGRES_USER:-flower_shop_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-12345678}
+      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_NAME: ${POSTGRES_NAME:-flower_shop_db}
+    command: uvicorn url_shortener_api.main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
     depends_on:
@@ -24,24 +24,23 @@ services:
       - app_net
 
   postgres:
-    env_file: .env
     image: postgres:18-alpine
+    restart: unless-stopped
     volumes:
       - postgres-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_DB=${POSTGRES_NAME}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_NAME:-flower_shop_db}
+      POSTGRES_USER: ${POSTGRES_USER:-flower_shop_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-12345678}
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_NAME}" ]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
       timeout: 5s
       retries: 5
     networks:
       - app_net
-    restart: always
 
 networks:
   app_net:
