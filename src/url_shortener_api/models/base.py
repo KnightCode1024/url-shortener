@@ -1,9 +1,8 @@
-from sqlalchemy import Integer, func
-from sqlalchemy import Integer, func, Uuid
+from sqlalchemy import Integer
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import (
-    DeclarativeBase, 
-    Mapped, 
+    DeclarativeBase,
+    Mapped,
     declared_attr,
     mapped_column,
 )

@@ -1,4 +1,4 @@
-from sqlalchemy import String
+from sqlalchemy import Integer, String, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from url_shortener_api.models.base import Base
@@ -11,4 +11,10 @@ class Link(Base):
         unique=True,
         nullable=False,
         index=True,
+    )
+    count_redirects: Mapped[int] = mapped_column(
+        Integer(),
+        nullable=False,
+        default=0,
+        server_default=text("0"),
     )
