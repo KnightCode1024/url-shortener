@@ -3,7 +3,7 @@ from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).parent.parent.parent
-ENV_PATH = BASE_DIR.parent / ".env"
+ENV_PATH = BASE_DIR / ".env"
 
 
 class DatabaseConfig(BaseSettings):
@@ -21,16 +21,14 @@ class DatabaseConfig(BaseSettings):
 
     @property
     def get_db_url(self) -> str:
-        return (
-            "postgresql+asyncpg://",
-            f"{self.USER}:{self.PASSWORD}@{self.HOST}:{self.PORT}/{self.NAME}",
-        )
+        return f"postgresql+asyncpg://{self.USER}:{self.PASSWORD}@{self.HOST}:{self.PORT}/{self.NAME}"
 
 
 class Config(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=ENV_PATH,
         env_file_encoding="utf-8",
+        extra="ignore",
     )
 
     database: DatabaseConfig = DatabaseConfig()
